@@ -443,14 +443,18 @@ The image shows the first lines of the DataFrame after applying this function. W
 
 ![image](https://github.com/zaouizakariae/NSL-KDD/assets/85891554/efdda8f1-ebc3-4912-b767-4967405e972d)
 
+The image shows a snippet of this filtered subset. We can observe different types of probe attacks ('ipsweep', 'portsweep', 'nmap', 'satan') and their corresponding destination host service error rate ('dst_host_srv_rerror_rate'). The values of 'difficulty level' vary, which could indicate the difficulty in detecting or responding to these attacks. Each line representing a 'Probe' type attack has been assigned an intrusion code of 2, in accordance with the previously established coding logic.
 
 ![image](https://github.com/zaouizakariae/NSL-KDD/assets/85891554/a25d90ee-4db0-42e2-bd93-3e290985fe1e)
 
+In the table, the selected columns display various statistics of network connections, the original attack type ('class'), difficulty level ('difficulty level'), categorized attack type ('attack_type'), and the corresponding intrusion code ('intrusion_code'). There are instances of 'normal' traffic and 'Dos' type attacks, mainly 'neptune'. The data reflect the outcome of the mapping performed, with 'neptune' attacks correctly identified as 'Dos' and coded as 1.
 
 ![image](https://github.com/zaouizakariae/NSL-KDD/assets/85891554/aced4087-e694-43c6-b464-f8e914248bde)
 
+The table shows an excerpt from the DataFrame test_df after applying a coding function to the 'attack_type' column, which was added using the names of attacks in the 'class' column. The attack_encode function converted the names of the attacks into a numerical code stored in the new 'intrusion_code' column. In this excerpt, 'neptune' attacks are categorized as 'Dos' with an intrusion code of 1, while 'normal', 'saint', and 'mscan' are considered normal traffic with an intrusion code of 0. This demonstrates that the function has been correctly applied to reflect the type of attack in a numerical form, which is useful for subsequent analysis steps.
 
 ![image](https://github.com/zaouizakariae/NSL-KDD/assets/85891554/2d253c3b-709a-4ff2-9176-f0c34918b8ea)
+
 
 
 ![image](https://github.com/zaouizakariae/NSL-KDD/assets/85891554/b1566f40-8377-42a0-a715-d9e22b063816)
