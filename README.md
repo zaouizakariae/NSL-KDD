@@ -1,6 +1,6 @@
 # NSL-KDD
 
-# Introsuction
+# Introduction
 
 
 In the ever-evolving landscape of cybersecurity, where the constant threat of malicious attacks looms, the imperative task of analyzing and detecting intrusions becomes paramount for the protection of computer systems. This project delves deep into the realm of cybersecurity, specifically directing its attention towards harnessing the power of machine learning algorithms, with a particular emphasis on neural networks. The objective is to meticulously analyze and categorize various manifestations of network attacks, leveraging the comprehensive "NSL_KDD" dataset.
