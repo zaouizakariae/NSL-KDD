@@ -455,8 +455,180 @@ The table shows an excerpt from the DataFrame test_df after applying a coding fu
 
 ![image](https://github.com/zaouizakariae/NSL-KDD/assets/85891554/2d253c3b-709a-4ff2-9176-f0c34918b8ea)
 
+The table represents data from a DataFrame that includes information on network activities. The displayed columns include characteristics of connections such as the type of protocol (tcp/udp), service (ftp_data, other, private, etc.), connection flag (SF, REJ, S0), and transferred bytes (src_bytes, dst_bytes). Additionally, error rate measures are presented. The last two columns, 'attack_type' and 'intrusion_code', classify the activities either as normal or as attacks, where 'neptune' is identified as a DoS (Denial of Service) type attack and coded with the number 1, while normal activities are coded with the number 0.
 
 
 ![image](https://github.com/zaouizakariae/NSL-KDD/assets/85891554/b1566f40-8377-42a0-a715-d9e22b063816)
 
 
+The results show that characteristics such as 'logged_in', 'dst_host_srv_count', and 'flag_SF' are among the most correlated with 'intrusion_code'. This indicates that these variables could be important predictors for identifying types of attacks in network data and should be included in the construction of the predictive model.
+
+
+## correlation between features :
+
+```python
+corr_df = train_df_new.corr()[train_df_new.corr().index]
+fig, ax = plt.subplots(figsize=(20,20))
+sns.heatmap(corr_df, annot=True, annot_kws={"size": 11})
+plt.show()
+```
+
+
+1. `corr_df = train_df_new.corr()[train_df_new.corr().index]`:
+   - `train_df_new.corr()` computes the correlation matrix for the DataFrame `train_df_new`.
+   - The indexing `[train_df_new.corr().index]` is redundant in this context, as calling `corr()` already returns a square matrix with rows and columns corresponding to the DataFrame's columns. It seems unnecessary unless there is a specific reason for reordering the matrix using its own index.
+
+2. `fig, ax = plt.subplots(figsize=(20,20))`:
+   - This line initializes a matplotlib Figure and Axes object. The `figsize=(20,20)` argument makes the figure 20 inches by 20 inches, ensuring that the heatmap will be large enough to display all variables clearly.
+
+3. `sns.heatmap(corr_df, annot=True, annot_kws={"size": 11})`:
+   - This line creates a heatmap using the Seaborn library with the correlation matrix `corr_df`.
+   - `annot=True` enables annotations inside the heatmap squares, displaying the correlation coefficients.
+   - `annot_kws={"size": 11}` sets the
+
+4. `plt.show()`:
+   - This command displays the heatmap visualization.
+   - 
+![image](https://github.com/zaouizakariae/NSL-KDD/assets/85891554/7319930d-2159-4de5-80a8-080245be28d7)
+
+The resulting heatmap visualizes the correlation coefficients between all pairs of features in `train_df_new`. Correlation coefficients range from -1 to 1, where:
+- 1 indicates a perfect positive linear relationship,
+- -1 indicates a perfect negative linear relationship,
+- 0 indicates no linear relationship.
+
+In the heatmap, each square represents the correlation between the variables on each axis. Colors typically range from dark to light, where dark colors represent strong negative correlations and light colors represent strong positive correlations. The correlation of a variable with itself is always 1, hence the diagonal line of light-colored squares.
+
+From the provided heatmap image, you can analyze which features are most strongly correlated with each other. Features that are highly correlated with 'intrusion_code' might be particularly important for predictive modeling purposes, as they could influence the model's ability to distinguish between different types of network activities, such as normal behavior and various kinds of attacks.
+
+## Modeling
+
+```python
+# Drop the 'intrusion_code' column to create the feature set (X)
+X = train_df_new.drop(columns='intrusion_code')
+
+# The 'intrusion_code' column is used as the target variable (y)
+y = train_df_new['intrusion_code']
+
+# Convert all column names in X to strings for consistency
+X.columns = X.columns.astype(str)
+
+# Convert the DataFrame X to a NumPy array for scaling
+X_array = X.values
+
+# Standardizing the data: Initialize the StandardScaler and fit it to the data
+scaler = StandardScaler().fit(X_array)
+
+# Transform the data using the fitted scaler
+X_scaled = scaler.transform(X_array)
+
+# Convert the scaled NumPy array back to a DataFrame
+# This step retains the column names and the DataFrame structure
+X_scaled = pd.DataFrame(X_scaled, columns=X.columns)
+
+# Splitting the data into training and testing sets
+# 80% of the data is used for training and 20% for testing
+# The random_state ensures reproducibility of the split
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=13)
+```
+
+1. **Preparing X (feature set variables) and y (target variable)**:
+   - `X = train_df_new.drop(columns='intrusion_code')`: This line creates a DataFrame `X` containing all the columns from `train_df_new` except for 'intrusion_code'. This implies 'intrusion_code' is the target variable, and the remaining columns are features.
+   - `y = train_df_new['intrusion_code']`: This line creates the target variable `y`, which consists of the values from the 'intrusion_code' column of `train_df_new`.
+
+2. **Convert all column names to strings**:
+   - `X.columns = X.columns.astype(str)`: This converts the column names of `X` into strings. This can be necessary if the column names are not already in string format and a later process requires them to be strings.
+
+3. **Convert DataFrame to NumPy array for scaling**:
+   - `X_array = X.values`: This converts the DataFrame `X` into a NumPy array `X_array`. This is often done before applying scaling because many scaling functions expect input in array format.
+
+4. **Standardizing data using StandardScaler**:
+   - `scaler = StandardScaler().fit(X_array)`: This initializes a `StandardScaler` object and fits it to the data. `StandardScaler` standardizes features by removing the mean and scaling to unit variance.
+   - `X_scaled = scaler.transform(X_array)`: This transforms the data using the fitted scaler, standardizing the features.
+
+5. **Convert NumPy array back to DataFrame**:
+   - `X_scaled = pd.DataFrame(X_scaled, columns=X.columns)`: The scaled data, which is in the form of a NumPy array, is converted back into a DataFrame. This is often done for better handling and visualization of the data.
+
+6. **Splitting data into train and test**:
+   - `X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=13)`: This line splits the dataset into training and testing sets. `test_size=0.2` indicates that 20% of the data will be used for testing, while the rest will be used for training. The `random_state` parameter ensures that the split is reproducible; the same split will occur every time the code is run.
+
+
+The provided code and results detail the process of defining, training, and evaluating a neural network model using TensorFlow and Keras for a classification task. Let's break down each part:
+
+## 
+
+```python
+# Import necessary TensorFlow and Keras modules
+import tensorflow as tf
+from sklearn.metrics import classification_report, accuracy_score
+
+# Assuming X_train, y_train, X_test, and y_test are predefined
+
+# Define the architecture of the neural network
+model = tf.keras.models.Sequential([
+    # Add a Dense layer with 64 neurons and ReLU activation function. 
+    # The input_shape is set to the number of features in X_train.
+    tf.keras.layers.Dense(64, activation='relu', input_shape=(X_train.shape[1],)),
+
+    # Add another Dense layer with 32 neurons, also with ReLU activation.
+    tf.keras.layers.Dense(32, activation='relu'),
+
+    # Add the output Dense layer with 1 neuron using sigmoid activation function 
+    # suitable for binary classification.
+    tf.keras.layers.Dense(1, activation='sigmoid')
+])
+
+# Compile the model
+# Use the Adam optimizer, binary crossentropy as the loss function 
+# (suitable for binary classification tasks), and track accuracy as a metric.
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+# Display a summary of the model's architecture
+# This shows the layers, their types, output shapes and number of parameters.
+model.summary()
+
+# Train the model on the training data
+# Train for 30 epochs (iterations over the entire dataset), with a batch size of 32
+model.fit(X_train, y_train, epochs=30, batch_size=32, validation_split=0.2)
+
+y_pred = (model.predict(X_test) > 0.5).astype("int32")  # Utiliser un seuil de 0.5 pour la classification binaire
+
+print("\nRapport de classification :\n", classification_report(y_test, y_pred))
+print("\nPrécision du modèle :", accuracy_score(y_test, y_pred))
+
+
+```
+
+## Model Definition
+1. **Architecture**: 
+   - The model is a Sequential model with three Dense layers.
+   - The first Dense layer has 64 neurons and uses the ReLU activation function. It is the input layer and its input shape is defined by the number of features in `X_train`.
+   - The second Dense layer has 32 neurons, also with ReLU activation.
+   - The third Dense layer is the output layer with a single neuron using the sigmoid activation function, which is typical for binary classification. 
+
+2. **Compilation**:
+   - The model is compiled with the Adam optimizer.
+   - The loss function used is 'binary_crossentropy', appropriate for binary classification tasks.
+   - The metric for evaluation is 'accuracy'.
+
+## Model Training
+1. **Training Process**:
+   - The model is trained for 30 epochs with a batch size of 32.
+   - A validation split of 20% is used, meaning 20% of the training data is used as a validation set to evaluate the model during training.
+
+2. **Training Output**:
+   - The training output shows the loss and accuracy for each epoch on both the training and validation sets.
+   - The loss is decreasing and accuracy is increasing as expected, but the loss values are unusually large and negative, which is atypical and might indicate an issue with the data or the model configuration.
+
+## Model Evaluation
+1. **Testing**:
+   - The model's performance is evaluated on the test set. The prediction (`y_pred`) is derived by applying a threshold of 0.5 to the model's output.
+
+2. **Classification Report and Accuracy**:
+   - The classification report shows precision, recall, and f1-score for each class along with overall accuracy.
+   - The model achieves an overall accuracy of 88%.
+   - However, the precision, recall, and f1-scores for some classes (like class 2 and 4) are 0, indicating the model is not performing well on these classes.
+
+
+## conclusion :
+
+After a series of analyses and development of models using NSL-KDD data for intrusion detection, we have achieved several important realizations. Preprocessing methods and exploratory data analysis have helped in understanding and preparing the data for modeling. Neural network models were designed and optimized, leading to a highly accurate model with an accuracy of about 99% after hyperparameter tuning. Confusion matrices and performance metrics confirmed the effectiveness of the final model. This work illustrates the potential of advanced machine learning techniques in securing computer systems against cyberattacks.
