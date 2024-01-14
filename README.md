@@ -129,4 +129,330 @@ This comprehensive section covers the definition of column names, loading of the
 
 > a bar plot created using the pandas plotting interface. Each bar represents a feature in the DataFrame, and the height of the bar seems to correspondto the number of non-null entries for that feature. Since all the bars are of the same height and fill the y-axis scale up to the total number of entries (22544), this corroborates the finding from the isnull().sum() output that there are no missing values in the dataset. The color 'red' and figure size (20, 15) were specified for the visualization.
 
+# Classification of Network Traffic and Distribution of Attack Types
+
+Based on the provided code snippets and results, here is a draft section of a report that discusses the classification of network traffic and the distribution of attack types in the training dataset:
+
+---
+
+# Classification of Network Traffic and Distribution of Attack Types
+
+```python
+
+
+# Load data from a CSV file into a DataFrame using specified column names
+test_df = pd.read_csv("KDDTest+.txt", names=col_names)
+
+# Display the loaded DataFrame
+test_df
+
+# Get unique values in the 'class' column of the training DataFrame
+train_df['class'].unique()
+
+# Calculate the counts of each class label in the training dataset
+classLabel_counts = train_df.groupby(['class']).size()
+
+# Display the class label counts
+classLabel_counts
+
+# Calculate the percentage of each class label with respect to the total size of the training dataset
+per_classLabels = classLabel_counts / train_df.shape[0] * 100
+
+# Display the percentages of class labels
+per_classLabels
+
+# Create a bar plot to visualize the class label counts
+fig = plt.figure(figsize=(20, 10))
+r_ = [round(each, 2) for each in per_classLabels.values]
+ax = fig.add_subplot(111)
+ax.bar(per_classLabels.index, per_classLabels.values, color=["mediumaquamarine", 'c', 'darkblue', 'tomato', 'navy'], edgecolor='black')
+ax.set_xticklabels(per_classLabels.index, rotation=45)
+ax.set_xlabel("Feature Name", fontsize=20)
+ax.set_ylabel("Count", fontsize=20)
+ax.set_title("Feature 'Class' label counts", fontsize=20)
+
+# Annotate the bar plot with percentage values
+for i in range(len(per_classLabels.values)):
+    plt.annotate(str(r_[i]), xy=(per_classLabels.index[i], r_[i] + 1), ha='center', va='bottom')
+
+# Define a dictionary to map attack labels to their corresponding categories
+attack_mapping = {
+    'land': 'Dos', 'neptune': 'Dos', 'smurf': 'Dos', 'pod': 'Dos', 'back': 'Dos', 'teardrop': 'Dos',
+    'portsweep': 'Probe', 'ipsweep': 'Probe', 'satan': 'Probe', 'nmap': 'Probe',
+    'buffer_overflow': 'U2R', 'loadmodule': 'U2R', 'perl': 'U2R', 'rootkit': 'U2R',
+    'normal': 'normal'
+}
+
+# Define a function to encode the attack labels into attack types using the mapping dictionary
+def encode_attack(vec):
+    return attack_mapping.get(vec, 'normal')
+
+# Create a new column 'attack_type' based on the encoding of the 'class' column
+train_df['attack_type'] = train_df['class'].apply(encode_attack)
+
+# Display the first 10 rows of the DataFrame with the 'attack_type' column
+train_df.iloc[:10, -5:]
+
+# Calculate the counts of different attack types in the dataset
+train_df.groupby('attack_type').size()
+
+# Calculate the percentage of data held by different attack types
+percent_data = (train_df.groupby('attack_type').size()) / train_df.shape[0] * 100
+
+# Display the percentage of data held by different attack types
+percent_data
+
+# Create a bar plot to visualize the counts of different attack types
+fig = plt.figure(figsize=(10, 8))
+r_ = [round(each, 2) for each in percent_data.values]
+ax = fig.add_subplot(111)
+ax.bar(percent_data.index, percent_data.values, color=['red', 'green', 'orange', 'blue', "mediumaquamarine"], edgecolor='black')
+ax.set_xticklabels(percent_data.index, rotation=45)
+ax.set_xlabel("Attack type", fontsize=20)
+ax.set_ylabel("Count", fontsize=20)
+ax.set_title("Attacks type data counts", fontsize=20)
+
+# Annotate the bar plot with percentage values
+for i in range(len(percent_data.values)):
+    plt.annotate(str(r_[i]), xy=(percent_data.index[i], r_[i] + 1), ha='center', va='bottom')
+```
+
+#### Data Acquisition
+The testing dataset, referred to as `test_df`, was loaded from a text file named "KDDTest+.txt" using the `pd.read_csv` function from the pandas library. Column names were assigned to the dataset upon import to maintain consistency with the training dataset structure. `test_df` consists of 22544 rows, each row representing a network connection, with 43 features describing each connection.
+
+![image](https://github.com/zaouizakariae/NSL-KDD/assets/85891554/ed216812-782f-4350-bc9f-b70ede7ea5e6)
+
+
+#### Class Label Analysis
+The `train_df` dataset was analyzed to determine the unique classes of network traffic, which represent the different types of connections, including various kinds of attacks and normal traffic. Using the `.unique()` method on the 'class' column, a variety of attack categories were identified.
+
+Subsequent to identifying unique classes, we computed the size of each class label in the dataset using `groupby(['class']).size()`. This provided the raw counts of instances for each class label within `train_df`.
+
+![image](https://github.com/zaouizakariae/NSL-KDD/assets/85891554/a0826480-5c8c-49f9-bf99-3f5d9c77a103)
+
+#### Distribution of Class Labels
+To put these counts into perspective, we calculated the percentage of each class label relative to the total number of instances in `train_df`, which contains 125973 entries. A bar chart was generated to visualize this distribution. The bar chart clearly illustrates that the 'normal' class label constitutes the majority of the instances, followed by various types of network attacks.
+
+![image](https://github.com/zaouizakariae/NSL-KDD/assets/85891554/efbba0b6-628e-445d-bff7-f68b14d7e686)
+
+
+#### Attack Type Categorization
+A critical part of the analysis was the categorization of these class labels into broader attack types: Dos
+
+(DoS), Probe, U2R (User to Root), R2L (Remote to Local), and Normal. This was achieved by applying a custom function `encode_attack` that maps each specific attack class to its corresponding attack type. For instance, 'land', 'neptune', 'smurf', 'pod', 'back', and 'teardrop' are all classified as DoS attacks.
+
+The new variable `attack_type` was created in `train_df` to hold these broader categories. The first 10 entries of the updated DataFrame were displayed to verify the successful application of the `encode_attack` function.
+
+#### Proportion of Attack Types
+The distribution of the broader attack types within `train_df` was then quantified by grouping the data by `attack_type` and calculating the size of each group. The percentage representation of each attack type was computed relative to the entire dataset. A second bar chart was created to represent this information, which provided a clear visualization of the prevalence of Normal traffic compared to actual attack types, with Normal traffic significantly outnumbering the attack instances.
+
+![image](https://github.com/zaouizakariae/NSL-KDD/assets/85891554/be99b086-d05b-4e4c-b6b2-36ba70d21226)
+
+
+#### Visualization
+
+
+These visualizations serve as an integral part of exploratory data analysis, providing immediate insights into the balance of the dataset and the relative frequency of different types of network activities captured in the data. The analysis indicates that while the dataset contains a diverse set of attack classifications, Normal traffic remains the most prevalent class, accounting for a significant portion of the network data.
+
+This information is crucial for subsequent stages of data preprocessing, feature engineering, and the development of machine learning models, as it highlights the need for strategies to address class imbalance and ensure robust model performance across all categories of network traffic.
+
+
+
+## Dependency of "flags" in attack type:
+
+```python
+# Create a new figure for plotting with a specified size
+fig = plt.figure(figsize=(10, 8))
+
+# Calculate a cross-tabulation (crosstab) of 'flag' and 'attack_type' columns in the training DataFrame
+avg_pro = pd.crosstab(train_df['flag'], train_df['attack_type'])
+
+# Normalize the crosstab by dividing each row by the sum of that row, converting it to a percentage
+avg_pro.div(avg_pro.sum(1).astype(float), axis=0).plot(kind='bar', stacked=True, color=['indigo', 'gold', 'teal', 'olive', 'slategrey'])
+
+# Add a title to the plot
+plt.title('Dependency of "flags" in attack type', fontsize=20)
+
+# Label the x-axis
+plt.xlabel('Flags', fontsize=20)
+
+# Add a legend to the plot to distinguish attack types
+plt.legend()
+
+# Display the plot
+plt.show()
+```
+This code creates a bar plot to visualize the dependency of different flags on different attack types by performing a cross-tabulation and normalizing the results to show the distribution of flags within each attack type.
+
+![image](https://github.com/zaouizakariae/NSL-KDD/assets/85891554/53ae57c0-3595-4a80-97e9-3c38fc7c9951)
+
+
+   - This chart displays the proportion of each attack type for different "flags" values. Flags in network traffic often indicate the type of connection or session state (such as established, reset, or synchronized).
+   - Each color in the bars represents a different attack type (DoS, Probe, U2R, R2L, Normal).
+   - The y-axis represents the proportion (likely normalized to a range between 0 and 1) of attack types within each flag category.
+   - The chart shows that some flags are more associated with certain types of attacks. For instance, one specific flag may have a higher proportion of DoS attacks, whereas another might be more associated with Normal traffic.
+
+## Dependency of "Protocols" in Attack types:
+
+```python
+# Create a new figure for plotting with a specified size
+fig = plt.figure(figsize=(10, 8))
+
+# Calculate a cross-tabulation (crosstab) of 'protocol_type' and 'attack_type' columns in the training DataFrame
+avg_pro = pd.crosstab(train_df['protocol_type'], train_df['attack_type'])
+
+# Normalize the crosstab by dividing each row by the sum of that row, converting it to a percentage
+avg_pro.div(avg_pro.sum(1).astype(float), axis=0).plot(kind='bar', stacked=True, color=['indigo', 'gold', 'teal', 'olive', 'slategrey'])
+
+# Add a title to the plot
+plt.title('Dependency of "Protocols" in Attack types', fontsize=20)
+
+# Label the x-axis
+plt.xlabel('Protocol Types', fontsize=20)
+
+# Add a legend to the plot to distinguish attack types
+plt.legend()
+
+# Display the plot
+plt.show()
+```
+This code creates a bar plot to visualize the dependency of different protocols on different attack types by performing a cross-tabulation and normalizing the results to show the distribution of protocols within each attack type.
+
+![image](https://github.com/zaouizakariae/NSL-KDD/assets/85891554/7a04fe01-b791-40e4-b2b0-76f8e6866db6)
+
+
+   - This chart shows the distribution of attack types over different network protocols such as TCP, UDP, ICMP, etc.
+   - Like the flags chart, different colors represent different attack types.
+   - The y-axis again seems to represent the proportion of each attack type within the given protocol type.
+   - This kind of analysis is important to understand which protocols are more vulnerable to specific types of attacks.
+
+### Analysis:
+- The charts are useful for identifying patterns in the data, such as if certain flags or protocols are more prone to specific attack types. 
+- For example, if a flag has a very high proportion of DoS attacks, it might indicate that sessions with this flag should be monitored more closely for potential DoS activity.
+- Similarly, if a
+
+protocol is predominantly associated with normal activity, this might suggest that traffic using this protocol is less likely to be malicious. Conversely, if a protocol is mostly associated with attack traffic, it could be a vector that security measures need to address more rigorously.
+- These visualizations could inform security professionals about the typical profiles of network traffic that are associated with different types of attacks, aiding in the development of targeted security measures.
+- However, it's important to note that correlation does not imply causation. While these visualizations show a relationship between flags or protocols and attack types, they do not necessarily indicate that one causes the other. Further statistical analysis would be required to determine if these relationships are significant and to what extent they might influence the likelihood of an attack.
+
+In summary, these visualizations are part of exploratory data analysis (EDA) that can provide insights into the structure and patterns within network traffic data. Such analysis is critical in the field of cybersecurity, where understanding the characteristics of
+
+traffic can lead to better anomaly detection and intrusion prevention strategies. The charts could also highlight areas where data collection might need to be more robust, or where further investigation could be beneficial for a more comprehensive understanding of network vulnerabilities. 
+
+## Dependency of services
+
+```python
+# Create a new figure for plotting with a specified size
+fig = plt.figure(figsize=(10, 8))
+
+# Calculate a cross-tabulation (crosstab) of 'service' and 'attack_type' columns in the training DataFrame
+avg_pro = pd.crosstab(train_df['service'], train_df['attack_type'])
+
+# Normalize the crosstab by dividing each row by the sum of that row, converting it to a percentage
+avg_pro.div(avg_pro.sum(1).astype(float), axis=0).plot(kind='bar', stacked=True, color=['indigo', 'gold', 'teal', 'olive', 'slategrey'])
+
+# Add a title to the plot
+plt.title('Dependency of "Services" in Attack types', fontsize=20)
+
+# Label the x-axis
+plt.xlabel('Service Types', fontsize=20)
+
+# Add a legend to the plot to distinguish attack types
+plt.legend()
+
+# Display the plot
+plt.show()
+```
+
+This code creates a bar plot to visualize the dependency of different service types on different attack types by performing a cross-tabulation and normalizing the results to show the distribution of services within each attack type.
+
+![image](https://github.com/zaouizakariae/NSL-KDD/assets/85891554/9d449f69-0b1a-44cb-a4f1-ad2f078104fc)
+
+
+Here's an analysis of the chart:
+
+- The x-axis represents different network services, which are likely to be from a dataset that includes network traffic data. Each bar represents a unique service type, such as HTTP, FTP, SMTP, etc.
+- The y-axis indicates the proportion, which ranges from 0 to 1, signifying the percentage contribution of each attack type to the service on the x-axis.
+- The colors in the bars represent different attack types: DoS (Denial of Service), Probe, U2R (User to Root), and normal traffic. Each color segment's length within a bar represents the proportion of that attack type for the corresponding service.
+- The chart shows that some services are predominantly associated with a single type of attack (e.g., a service might show a large purple segment, indicating a high proportion of DoS attacks).
+
+This kind of visualization is particularly useful in cybersecurity for identifying which network services are most associated with certain types of attacks. Security teams can use this information to prioritize monitoring and protective measures for services that are frequently targeted.
+
+However, this chart appears to be quite dense with many services listed on the x-axis, which makes it difficult to read specific service names or to discern the distribution clearly for each service. This suggests that a different type of visualization or a filtered view showing only the most common
+
+services might be more effective for detailed analysis. For example, a series of pie charts for the most frequently attacked services or a heat map could provide clearer insights.
+
+## Encoding attaques :
+
+
+```python
+# Define a dictionary to encode attack types into numerical values
+attack_encoding = {'normal': 0, 'Dos': 1, 'Probe': 2, 'R2L': 3}
+
+# Define a function to apply the attack encoding to the 'attack_type' column and create a new 'intrusion_code' column
+def attack_encode(value):
+    return attack_encoding.get(value, 4)  # Default to 4 if value is not found in the dictionary
+
+# Apply the attack_encode function to the 'attack_type' column and create a new 'intrusion_code' column
+train_df['intrusion_code'] = train_df['attack_type'].apply(attack_encode)
+
+# Display the first 10 rows of the DataFrame with the new 'intrusion_code' column
+train_df.iloc[:10, -5:]
+
+# Filter the DataFrame to show the first 10 rows where 'intrusion_code' is equal to 2
+train_df[train_df['intrusion_code'] == 2].iloc[:10, -5:].head()
+
+# Copy the original DataFrames for backup
+train_df_back = train_df
+test_df_back = test_df
+
+# Drop columns 'class', 'difficulty level', and 'attack_type' from both train and test DataFrames
+train_df = train_df.drop(columns=['class', 'difficulty level', 'attack_type'])
+test_df = test_df.drop(columns=['class', 'difficulty level', 'attack_type'])
+
+# Perform one-hot encoding on both the train and test DataFrames to convert categorical variables into numerical form
+train_df_new = pd.get_dummies(train_df)
+test_df_new = pd.get_dummies(test_df)
+
+# Calculate the correlation between features and the target variable 'intrusion_code'
+highly_correlated = train_df_new.corr().abs()['intrusion_code'].sort_values(ascending=False)
+
+# Print the top 30 highly correlated features with respect to the target variable 'intrusion_code'
+print(highly_correlated[:30])
+
+# Select only the top 30 features from both the train and test DataFrames for modeling
+train_df_new = train_df_new[list(highly_correlated[:30].index)]
+test_df_new = train_df_new[list(highly_correlated[:30].index)]
+```
+
+Explanation:
+1. A dictionary `attack_encoding` is defined to map attack types to numerical values.
+2. A function `attack_encode` is defined to apply this encoding to the 'attack_type' column, creating a new 'intrusion_code' column in the DataFrame.
+3. The first 10 rows of the DataFrame with the new 'intrusion_code' column are displayed.
+4. Rows where 'intrusion_code' is equal to 2 are filtered and displayed.
+5. Original DataFrames are backed up as `train_df_back` and `test_df_back`.
+6. Columns 'class', 'difficulty level', and 'attack_type' are dropped from both train and test DataFrames.
+7. One-hot encoding is applied to convert categorical variables into numerical form for both train and test DataFrames.
+8. The correlation between features and the target variable 'intrusion_code' is calculated.
+9. The top 30 highly correlated features are printed.
+10. Only the top 30 features are selected from both the train and test DataFrames for modeling.
+
+![image](https://github.com/zaouizakariae/NSL-KDD/assets/85891554/1c485648-75ab-40ed-abef-2d72309f315c)
+
+The image shows the first lines of the DataFrame after applying this function. We can see that 'normal' type attacks have an intrusion code of 0, and the 'neptune' attacks, which are 'Dos' type attacks, have an intrusion code of 1. This transforms the categorical data into a numeric format that can be more easily used in machine learning models.
+
+![image](https://github.com/zaouizakariae/NSL-KDD/assets/85891554/efdda8f1-ebc3-4912-b767-4967405e972d)
+
+
+![image](https://github.com/zaouizakariae/NSL-KDD/assets/85891554/a25d90ee-4db0-42e2-bd93-3e290985fe1e)
+
+
+![image](https://github.com/zaouizakariae/NSL-KDD/assets/85891554/aced4087-e694-43c6-b464-f8e914248bde)
+
+
+![image](https://github.com/zaouizakariae/NSL-KDD/assets/85891554/2d253c3b-709a-4ff2-9176-f0c34918b8ea)
+
+
+![image](https://github.com/zaouizakariae/NSL-KDD/assets/85891554/b1566f40-8377-42a0-a715-d9e22b063816)
+
 
